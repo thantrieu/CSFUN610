@@ -21,20 +21,28 @@ namespace ExercisesLesson610
             do
             {
                 Console.WriteLine("================== CÁC CHỨC NĂNG ==================");
-                Console.WriteLine("1. Thêm mới nhân viên vào danh sách.");
-                Console.WriteLine("2. Hiển thị danh sách nhân viên ra màn hình.");
-                Console.WriteLine("3. Tính lương các nhân viên trong danh sách.");
-                Console.WriteLine("4. Sắp xếp danh sách nhân viên theo lương thực lĩnh.");
-                Console.WriteLine("5. Sắp xếp danh sách nhân viên theo số ngày đi làm.");
-                Console.WriteLine("6. Tìm và hiển thị thông tin nhân viên theo mã NV.");
-                Console.WriteLine("7. Cập nhật lương cho nhân viên theo mã cho trước.");
-                Console.WriteLine("8. Xóa bỏ nhân viên khi biết mã NV cho trước.");
-                Console.WriteLine("9. Thoát chương trình.");
+                Console.WriteLine("01. Thêm mới tài khoản ngân hàng vào danh sách.");
+                Console.WriteLine("02. Hiển thị danh sách tài khoản ra màn hình.");
+                Console.WriteLine("03. Sắp xếp danh sách theo số dư giảm dần.");
+                Console.WriteLine("04. Nộp tiền vào tài khoản theo số tài khoản.");
+                Console.WriteLine("05. Kiểm tra số dư của tài khoản.");
+                Console.WriteLine("06. Rút tiền cùng ngân hàng của một tài khoản.");
+                Console.WriteLine("07. Rút tiền khác ngân hàng của một tài khoản.");
+                Console.WriteLine("08. Chuyển tiền cùng ngân hàng của một tài khoản.");
+                Console.WriteLine("09. Chuyển tiền khác ngân hàng của một tài khoản.");
+                Console.WriteLine("10. Thanh toán phí dịch vụ cho một tài khoản.");
+                Console.WriteLine("11. Chốt lãi cho các tài khoản trong danh sách.");
+                Console.WriteLine("12. Thoát chương trình.");
                 Console.WriteLine("==> Xin mời bạn chọn chức năng: ");
                 choice = int.Parse(Console.ReadLine());
                 switch (choice)
                 {
                     case 1:
+                        var acc = CreateAccount();
+                        if (acc != null)
+                        {
+                            bankAccounts[numOfAccount++] = acc;
+                        }
                         break;
                     case 2:
                         if (numOfAccount > 0)
@@ -146,6 +154,46 @@ namespace ExercisesLesson610
             } while (choice != 12);
         }
 
+        // tạo tài khoản mới
+        private static BankAccount CreateAccount()
+        {
+            Console.WriteLine("==> Xin mời chọn: ");
+            Console.WriteLine("1. Tạo tài khoản Thanh toán.");
+            Console.WriteLine("2. Tạo tài khoản Tiết kiệm.");
+            int ans = int.Parse(Console.ReadLine());
+            if (ans == 1)
+            {
+                Console.WriteLine("Họ và tên chủ tài khoản: ");
+                var owner = Console.ReadLine().ToUpper();
+                Console.WriteLine("Ngân hàng phát hành: ");
+                var bank = Console.ReadLine();
+                Console.WriteLine("Tháng năm phát hành(ví dụ 01/21): ");
+                var releaseDate = Console.ReadLine();
+                Console.WriteLine("Số dư(kđ, 1kđ = 1000đ): ");
+                var balance = long.Parse(Console.ReadLine()) * 1000;
+                Console.WriteLine("Hạn mức một ngày(kđ, 1kđ = 1000đ): ");
+                var limit = long.Parse(Console.ReadLine()) * 1000;
+                return new CheckingAccount(null, owner, bank, releaseDate, balance, limit);
+            }
+            else if (ans == 2)
+            {
+                Console.WriteLine("Họ và tên chủ tài khoản: ");
+                var owner = Console.ReadLine().ToUpper();
+                Console.WriteLine("Ngân hàng phát hành: ");
+                var bank = Console.ReadLine();
+                Console.WriteLine("Tháng năm phát hành(ví dụ 01/21): ");
+                var releaseDate = Console.ReadLine();
+                Console.WriteLine("Số dư(kđ, 1kđ = 1000đ): ");
+                var balance = long.Parse(Console.ReadLine()) * 1000;
+                Console.WriteLine("Kỳ hạn(tháng, gửi không thời hạn ghi -1): ");
+                var term = int.Parse(Console.ReadLine());
+                var startDate = DateTime.Now;
+                return new SavingAccount(null, owner, bank, releaseDate,
+                    balance, term, startDate, startDate.AddMonths(term));
+            }
+            return null;
+        }
+
         // tính tiền lãi cuối kỳ của từng tài khoản, cộng gộp vào tk gốc
         private static void CalculateInterest(BankAccount[] bankAccounts)
         {
@@ -161,11 +209,36 @@ namespace ExercisesLesson610
             }
         }
 
+        // trả phí dịch vụ
         private static void PayService(BankAccount[] bankAccounts)
         {
-            throw new NotImplementedException();
+            Console.WriteLine("Số tài khoản cần thanh toán: ");
+            var accNumber = Console.ReadLine();
+            var acc = FindAccountByAccNumber(bankAccounts, accNumber);
+            Console.WriteLine("Số tài khoản nhận thanh toán: ");
+            var destAccNumber = Console.ReadLine();
+            var destAcc = FindAccountByAccNumber(bankAccounts, destAccNumber);
+            if (acc != null && destAcc != null)
+            {
+                Console.WriteLine("Số tiền phải trả(kđ): ");
+                var amount = long.Parse(Console.ReadLine()) * 1000;
+                var result = acc.Pay(destAcc, amount, acc.Bank);
+                if (result > 0)
+                {
+                    Console.WriteLine("==> Thanh toán thành công. <==");
+                }
+                else
+                {
+                    Console.WriteLine("==> Thanh toán thất bại. <==");
+                }
+            }
+            else
+            {
+                Console.WriteLine("==> Tài khoản nguồn hoặc tài khoản đích không tồn tại. <==");
+            }
         }
 
+        // chuyển tiền khác ngân hàng
         private static void TransferDifferentBank(BankAccount[] bankAccounts)
         {
             Console.WriteLine("Số tài khoản nguồn: ");
@@ -176,9 +249,8 @@ namespace ExercisesLesson610
             var destAcc = FindAccountByAccNumber(bankAccounts, destAccNumber);
             if (acc != null && destAcc != null)
             {
-                Console.WriteLine("Số tiền muốn chuyển: ");
-                var amount = long.Parse(Console.ReadLine());
-                Console.WriteLine("Ngân hàng thực hiện: ");
+                Console.WriteLine("Số tiền muốn chuyển(kđ): ");
+                var amount = long.Parse(Console.ReadLine()) * 1000;
                 Console.WriteLine("Ngân hàng thực hiện: ");
                 var bank = Console.ReadLine();
                 var result = acc.BankTransfer(destAcc, amount, bank);
@@ -197,6 +269,7 @@ namespace ExercisesLesson610
             }
         }
 
+        // chuyển tiền cùng ngân hàng
         private static void TransferSameBank(BankAccount[] bankAccounts)
         {
             Console.WriteLine("Số tài khoản nguồn: ");
@@ -207,8 +280,8 @@ namespace ExercisesLesson610
             var destAcc = FindAccountByAccNumber(bankAccounts, destAccNumber);
             if (acc != null && destAcc != null)
             {
-                Console.WriteLine("Số tiền muốn chuyển: ");
-                var amount = long.Parse(Console.ReadLine());
+                Console.WriteLine("Số tiền muốn chuyển(kđ): ");
+                var amount = long.Parse(Console.ReadLine()) * 1000;
                 var result = acc.BankTransfer(destAcc, amount, acc.Bank);
                 if (result > 0)
                 {
@@ -225,6 +298,7 @@ namespace ExercisesLesson610
             }
         }
 
+        // rút tiền khác ngân hàng
         private static void WithdrawOtherBank(BankAccount[] bankAccounts)
         {
             Console.WriteLine("Số tài khoản: ");
@@ -232,8 +306,8 @@ namespace ExercisesLesson610
             var acc = FindAccountByAccNumber(bankAccounts, accNumber);
             if (acc != null)
             {
-                Console.WriteLine("Số tiền muốn rút: ");
-                var amount = long.Parse(Console.ReadLine());
+                Console.WriteLine("Số tiền muốn rút(kđ): ");
+                var amount = long.Parse(Console.ReadLine()) * 1000;
                 Console.WriteLine("Ngân hàng thực hiện: ");
                 var bank = Console.ReadLine();
                 var result = acc.Withdraw(amount, bank);
@@ -252,6 +326,7 @@ namespace ExercisesLesson610
             }
         }
 
+        // rút tiền cùng ngân hàng
         private static void Withdraw(BankAccount[] bankAccounts)
         {
             Console.WriteLine("Số tài khoản: ");
@@ -259,8 +334,8 @@ namespace ExercisesLesson610
             var acc = FindAccountByAccNumber(bankAccounts, accNumber);
             if (acc != null)
             {
-                Console.WriteLine("Số tiền muốn rút: ");
-                var amount = long.Parse(Console.ReadLine());
+                Console.WriteLine("Số tiền muốn rút(kđ): ");
+                var amount = long.Parse(Console.ReadLine()) * 1000;
                 var result = acc.Withdraw(amount, acc.Bank);
                 if (result > 0)
                 {
@@ -277,6 +352,7 @@ namespace ExercisesLesson610
             }
         }
 
+        // kiểm tra số dư tài khoản
         private static void CheckBallance(BankAccount[] bankAccounts)
         {
             Console.WriteLine("Số tài khoản: ");
@@ -294,6 +370,7 @@ namespace ExercisesLesson610
             }
         }
 
+        // tìm tài khoản theo số tài khoản
         public static BankAccount FindAccountByAccNumber(BankAccount[] accounts, string accNumber)
         {
             foreach (var item in accounts)
@@ -306,6 +383,7 @@ namespace ExercisesLesson610
             return null;
         }
 
+        // nạp tiền vào tài khoản
         private static void Deposit(BankAccount[] bankAccounts)
         {
             Console.WriteLine("Số tài khoản: ");
@@ -315,8 +393,8 @@ namespace ExercisesLesson610
             {
                 Console.WriteLine("Tên ngân hàng làm dịch vụ: ");
                 var bank = Console.ReadLine();
-                Console.WriteLine("Số tiền cần gửi vào TK: ");
-                var amount = long.Parse(Console.ReadLine());
+                Console.WriteLine("Số tiền cần gửi vào TK(kđ): ");
+                var amount = long.Parse(Console.ReadLine()) * 1000;
                 var result = acc.Deposit(amount, bank);
                 if (result > 0)
                 {
@@ -329,6 +407,7 @@ namespace ExercisesLesson610
             }
         }
 
+        // sắp xếp tài khoản theo số dư giảm dần
         private static void SortAccounts(BankAccount[] bankAccounts)
         {
             int comparer(BankAccount a, BankAccount b)
@@ -341,7 +420,7 @@ namespace ExercisesLesson610
                 {
                     return -1;
                 }
-                else if (a == null || b != null)
+                else if (a == null && b != null)
                 {
                     return 1;
                 }
@@ -364,6 +443,7 @@ namespace ExercisesLesson610
             Array.Sort(bankAccounts, comparer);
         }
 
+        // hiển thị danh sách tài khoản
         private static void ShowAccounts(BankAccount[] bankAccounts)
         {
             var accNumber = "Số tài khoản";
@@ -400,14 +480,16 @@ namespace ExercisesLesson610
                 else if (item.GetType() == typeof(SavingAccount))
                 {
                     var acc = item as SavingAccount;
+                    var termValue = acc.Term == -1 ? "Không thời hạn" : $"{acc.Term}";
                     Console.WriteLine($"{acc.AccountNumber,-20:d}{acc.Owner,-25:d}{acc.Bank,-15:d}" +
                         $"{acc.ReleaseDate,-15:d}{acc.Balance,-20:n}{acc.InterestRate / 100,-15:p}" +
-                        $"{noData,-20:d}{acc.Term,-15:d}{acc.StartDate.ToString(format),-15:d}" +
+                        $"{noData,-20:d}{termValue,-15:d}{acc.StartDate.ToString(format),-15:d}" +
                         $"{acc.EndDate.ToString(format),-15:d}{acc.CalculateInterest(),-20:n}");
                 }
             }
         }
 
+        // tạo danh sách tài khoản fake để test các chức năng
         private static void CreateFakeAccount(BankAccount[] bankAccounts, ref int numOfAccount)
         {
             var dateFormatter = "dd/MM/yyyy";
@@ -430,8 +512,10 @@ namespace ExercisesLesson610
         }
     }
 
+    // lớp cha trừu tượng mô tả thông tin, hành động của tài khoản ngân hàng
     abstract class BankAccount
     {
+        private static int autoId = 1000;
         public string AccountNumber { get; set; }
         public string Owner { get; set; }
         public string Bank { get; set; }
@@ -443,13 +527,19 @@ namespace ExercisesLesson610
 
         public BankAccount(string accNum)
         {
-            AccountNumber = accNum;
+            if (accNum == null)
+            {
+                AccountNumber = $"002100043{autoId++}";
+            }
+            else
+            {
+                AccountNumber = accNum;
+            }
         }
 
         public BankAccount(string accNum, string owner, string bank,
             string releaseDate, long balance, double interestRate) : this(accNum)
         {
-            AccountNumber = accNum;
             Owner = owner;
             Bank = bank;
             ReleaseDate = releaseDate;
@@ -471,6 +561,7 @@ namespace ExercisesLesson610
         public abstract long CalculateInterest();
     }
 
+    // lớp mô tả tài khoản thanh toán
     class CheckingAccount : BankAccount
     {
         public long PaymentLimit { get; set; }
@@ -528,7 +619,8 @@ namespace ExercisesLesson610
                         }
                     }
                     Balance -= fee;
-                    Console.WriteLine("==> Chuyển tiền thành công. <==");
+                    Console.WriteLine($"==> Tài khoản {AccountNumber}: -{amount + fee:n}đ. <==");
+                    Console.WriteLine($"==> Tài khoản {other.AccountNumber}: +{amount:n}đ. <==");
                     return amount;
                 }
                 else if (IsPaymentLimitOver(amount))
@@ -551,7 +643,7 @@ namespace ExercisesLesson610
             Console.WriteLine("========== THÔNG TIN TÀI KHOẢN ==========");
             Console.WriteLine($"Số tài khoản: {AccountNumber}");
             Console.WriteLine($"Loại tài khoản: Thanh toán");
-            Console.WriteLine($"Số dư: {Balance}");
+            Console.WriteLine($"Số dư: {Balance:n}đ");
             Console.WriteLine($"Ngày phát hành: {ReleaseDate}");
             Console.WriteLine($"Thời gian thực hiện: {DateTime.Now.ToString(dateTimeFormat)}");
             Console.WriteLine("=========================================");
@@ -567,13 +659,13 @@ namespace ExercisesLesson610
             else
             {
                 Balance += amount;
-                Console.WriteLine("==> Nạp tiền thành công. <==");
+                Console.WriteLine($"==> Tài khoản {AccountNumber}: +{amount:n}đ. <==");
                 var fee = 0;
                 if (bankName.CompareTo(Bank) != 0)
                 {
                     fee = 35000;
                 }
-                Console.WriteLine($"==> Phí dịch vụ: {fee}đ");
+                Console.WriteLine($"==> Phí dịch vụ: {fee:n}đ");
                 return amount;
             }
         }
@@ -603,7 +695,7 @@ namespace ExercisesLesson610
                         }
                     }
                     Balance -= fee;
-                    Console.WriteLine("==> Thanh toán thành công. <==");
+                    Console.WriteLine($"==> Tài khoản {AccountNumber}: -{amount + fee:n}đ. <==");
                     return amount;
                 }
                 else if (IsPaymentLimitOver(amount))
@@ -632,7 +724,7 @@ namespace ExercisesLesson610
                 }
                 Balance = Balance - amount - fee;
                 var dateTimeFormat = "dd/MM/yyyy HH:mm:ss";
-                Console.WriteLine("==> Rút tiền thành công");
+                Console.WriteLine($"==> Tài khoản {AccountNumber}: -{amount + fee:n}đ. <==");
                 Console.WriteLine($"==> Thời gian giao dịch: {DateTime.Now.ToString(dateTimeFormat)}");
                 return amount + fee;
             }
@@ -650,6 +742,7 @@ namespace ExercisesLesson610
         }
     }
 
+    // lớp mô tả tài khoản tiết kiệm
     class SavingAccount : BankAccount
     {
         public int Term { get; set; } // kì hạn
@@ -733,7 +826,8 @@ namespace ExercisesLesson610
                     }
                     fee += (int)(3.0 / 100 * amount);
                     Balance -= fee;
-                    Console.WriteLine("==> Chuyển tiền thành công. <==");
+                    Console.WriteLine($"==> Tài khoản {AccountNumber}: -{amount + fee:n}đ. <==");
+                    Console.WriteLine($"==> Tài khoản {other.AccountNumber}: +{amount:n}đ. <==");
                     return amount;
                 }
                 else
@@ -750,11 +844,11 @@ namespace ExercisesLesson610
             var dateTimeFormat = "dd/MM/yyyy HH:mm:ss";
             Console.WriteLine("========== THÔNG TIN TÀI KHOẢN ==========");
             Console.WriteLine($"Số tài khoản: {AccountNumber}");
-            Console.WriteLine($"Loại tài khoản: Tiết kiệm");
-            Console.WriteLine($"Số dư: {Balance}");
+            Console.WriteLine($"Loại tài khoản: Tiết kiệm.");
+            Console.WriteLine($"Số dư: {Balance:n}đ");
             Console.WriteLine($"Ngày phát hành: {ReleaseDate}");
-            Console.WriteLine($"Kỳ hạn: {Term}");
-            Console.WriteLine($"Lãi suất: {InterestRate}%");
+            Console.WriteLine($"Kỳ hạn: {Term} tháng.");
+            Console.WriteLine($"Lãi suất: {InterestRate/100:p}");
             Console.WriteLine($"Hiệu lực từ: {StartDate.ToString(format)}");
             Console.WriteLine($"Hiệu lực đến: {EndDate.ToString(format)}");
             Console.WriteLine($"Thời gian thực hiện: {DateTime.Now.ToString(dateTimeFormat)}");
@@ -771,13 +865,13 @@ namespace ExercisesLesson610
             else
             {
                 Balance += amount;
-                Console.WriteLine("==> Nạp tiền thành công. <==");
+                Console.WriteLine($"==> Tài khoản {AccountNumber}: +{amount:n}đ. <==");
                 var fee = 0;
                 if (bankName.CompareTo(Bank) != 0)
                 {
                     fee = 35000;
                 }
-                Console.WriteLine($"==> Phí dịch vụ: {fee}đ");
+                Console.WriteLine($"==> Phí dịch vụ: {fee:n}đ");
                 return amount;
             }
         }
@@ -807,7 +901,7 @@ namespace ExercisesLesson610
                     }
                     fee += (int)(3.0 / 100 * amount);
                     Balance -= fee;
-                    Console.WriteLine("==> Thanh toán thành công. <==");
+                    Console.WriteLine($"==> Tài khoản {AccountNumber}: -{amount + fee:n}đ. <==");
                     return amount;
                 }
                 else
@@ -830,7 +924,7 @@ namespace ExercisesLesson610
                 fee += (int)(3.0 / 100 * amount);
                 Balance = Balance - amount - fee;
                 var dateTimeFormat = "dd/MM/yyyy HH:mm:ss";
-                Console.WriteLine("==> Rút tiền thành công");
+                Console.WriteLine($"==> Tài khoản {AccountNumber}: -{amount + fee:n}đ. <==");
                 Console.WriteLine($"==> Thời gian giao dịch: {DateTime.Now.ToString(dateTimeFormat)}");
                 return (amount + fee);
             }
