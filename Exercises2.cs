@@ -914,7 +914,7 @@ namespace ExercisesLesson610
 
         public override long Withdraw(long amount, string bankName)
         {
-            if (amount <= Balance + 50000)
+            if (amount <= Balance - 50000)
             {
                 var fee = 1100;
                 if (bankName.CompareTo(Bank) != 0)
